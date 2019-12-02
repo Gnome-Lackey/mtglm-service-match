@@ -1,0 +1,32 @@
+name: ${self:provider.stage}-mtglm-matches-delete
+handler: build/handlers/delete.handler
+tags:
+  delete: match
+events:
+  - http:
+      method: delete
+      path: matches/{matchId}
+      authorizer: ${file(partials/common/authorizer.yml)}
+      cors: ${file(partials/common/cors.yml)}
+      documentation:
+        summary: "DELETE Match"
+        description: "Remove an existing match."
+        requestHeaders:
+          - name: "Authorization"
+            description: "Authorization token is needed to access the endpoint."
+        pathParams:
+          - name: "matchId"
+            description: "ID of the match being removed"
+            required: true
+        methodResponses:
+          - statusCode: "200"
+            requestModels:
+              "application/json": SuccessResponse
+          - statusCode: "500"
+iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - dynamodb:DeleteItem
+    Resource:
+      - Fn::GetAtt: [MatchesTable, Arn]
+      - Fn::GetAtt: [RecrodsTable, Arn]

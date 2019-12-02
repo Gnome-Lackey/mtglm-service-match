@@ -1,0 +1,5 @@
+Description: 'ARN for the dynamo records table'
+Value:
+  "Fn::GetAtt": [RecordsTable, Arn]
+Export:
+  Name: ${self:provider.stage}-mtglm-RecordTableArn

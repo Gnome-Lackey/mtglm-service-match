@@ -1,0 +1,2 @@
+authorizerId: { Ref: MatchesApiGatewayAuthorizer }
+type: COGNITO_USER_POOLS

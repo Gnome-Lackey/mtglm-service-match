@@ -1,0 +1,10 @@
+Type: AWS::ApiGateway::Authorizer
+Properties: 
+  AuthorizerResultTtlInSeconds: 10
+  IdentitySource: method.request.header.Authorization
+  Name: ${self:custom.userPoolName}
+  RestApiId: 
+    Ref: ApiGatewayRestApi
+  Type: COGNITO_USER_POOLS
+  ProviderARNs: 
+    - ${self:custom.userPoolArn}

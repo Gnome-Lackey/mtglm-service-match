@@ -1,0 +1,47 @@
+service: mtglm-matches
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'local'}
+  region: us-east-1
+  memorySize: 128
+  environment:
+    ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
+    MATCH_TABLE_NAME: ${self:provider.stage}-mtglm-matches
+    RECORD_TABLE_NAME: ${self:provider.stage}-mtglm-records
+    USER_POOL_ID:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
+
+package:
+  include:
+    - ../build/**
+    - ../node_modules/**
+
+plugins:
+  - serverless-offline
+  - serverless-iam-roles-per-function
+  - serverless-aws-documentation
+
+resources:
+  Resources:
+    MatchesApiGatewayAuthorizer: ${file(partials/apiGatewayAuthorizer.yml)}
+    MatchesTable: ${file(partials/dynamo.yml)}
+    RecordsTable: ${file(partials/dynamo.yml)}
+  Outputs:
+    matchTableArn: ${file(partials/outputs/TableArn.yml)}
+    matchTableName: ${file(partials/outputs/TableName.yml)}
+    recordTableArn: ${file(partials/outputs/TableArn.yml)}
+    recordTableName: ${file(partials/outputs/TableName.yml)}
+
+custom:
+  documentation: ${file(partials/documentation.yml)}
+  userPoolArn: 
+    Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolArn
+  userPoolName: 
+    Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
+
+functions:
+  Get: ${file(partials/functions/get.yml)}
+  Create: ${file(partials/functions/create.yml)}
+  Delete: ${file(partials/functions/delete.yml)}

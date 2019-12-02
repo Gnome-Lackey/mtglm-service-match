@@ -1,0 +1,4 @@
+Description: 'Name of the dynamo matches table'
+Value: ${self:provider.stage}-mtglm-matches
+Export:
+  Name: ${self:provider.stage}-mtglm-MatchTableName

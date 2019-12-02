@@ -1,0 +1,33 @@
+api:
+  info:
+    version: "1"
+    title: "Match API"
+    description: "API for generic match details."
+models:
+  - name: "CreateMatchRequest"
+    description: "Create match request body."
+    contentType: "application/json"
+    schema: ${file(models/requests/create.json)}
+  - name: "CreateMatchResponse"
+    description: "Create match response body."
+    contentType: "application/json"
+    schema: ${file(models/responses/match.json)}
+  - name: "MatchResponse"
+    description: "Get specific match response body."
+    contentType: "application/json"
+    schema: ${file(models/responses/match.json)}
+  - name: "MatchesResponse"
+    description: "List of match(es) response body."
+    contentType: "application/json"
+    schema: ${file(models/responses/matches.json)}
+  - name: "SuccessResponse"
+    description: "Success message response body."
+    contentType: "application/json"
+    schema: ${file(models/responses/success.json)}
+resources:
+  - path: Create
+    description: "Creates a new match."
+  - path: Get
+    description: "Retrieves a match."
+  - path: Delete
+    description: "Deletes a match."

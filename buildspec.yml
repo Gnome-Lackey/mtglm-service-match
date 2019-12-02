@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - echo "Installing global dependencies ..."
+      - apt-get install -y yarn
+      - yarn global add serverless eslint
+      - echo "Installed global dependencies"
+  pre_build:
+    commands:
+      - echo "Installing local dependencies ..."
+      - yarn
+      - echo "Installed local dependencies"
+      - echo "Linting scripts ..."
+      - yarn lint
+      - echo "Linting passed; no errors"
+  build:
+    commands:
+      - echo "Compiling typescript files ..."
+      - yarn build
+      - echo "Compiled files"
+      - echo "Deploying project ..."
+      - cd ./serverless
+      - sls deploy --verbose --key $AWS_ID --secret $AWS_SECRET --stage $ENV
+      - echo "Deployed project on `date`"

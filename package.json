@@ -1,0 +1,48 @@
+{
+  "name": "mtglm-matches-lambda",
+  "parser": "babel-eslint",
+  "version": "1.0.0",
+  "description": "Match services for mtglm application.",
+  "scripts": {
+    "build": "tsc --project ./tsconfig.json --noUnusedLocals",
+    "lint": "eslint --ext .ts src/",
+    "start": "sls offline"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:Gnome-Lackey/mtglm-service-match.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gnome-Lackey/mtglm-service-match/issues"
+  },
+  "homepage": "https://github.com/Gnome-Lackey/mtglm-service-match#readme",
+  "pre-commit": [
+    "lint",
+    "build"
+  ],
+  "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "@types/jwt-decode": "^2.2.1",
+    "@types/node": "^12.7.12",
+    "@types/uuid": "^3.4.5",
+    "aws-sdk": "^2.482.0",
+    "global": "^4.4.0",
+    "jwt-decode": "^2.2.0",
+    "mtglm-service-sdk": "Gnome-Lackey/mtglm-service-sdk#develop",
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-iam-roles-per-function": "^2.0.1",
+    "typescript": "^3.6.4",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "@bsokol/eslint-config": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "babel-eslint": "8",
+    "eslint": "5.x",
+    "eslint-plugin-filenames": "^1.3.2",
+    "pre-commit": "^1.2.2",
+    "serverless-offline": "^5.5.0"
+  }
+}

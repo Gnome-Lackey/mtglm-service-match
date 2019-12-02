@@ -1,0 +1,32 @@
+name: ${self:provider.stage}-mtglm-matches-post
+handler: build/handlers/post.handler
+tags:
+  post: match
+events:
+  - http:
+      method: post
+      path: matches
+      request:
+        schema:
+          application/json: ${file(models/requests/create.json)}
+      authorizer: ${file(partials/common/authorizer.yml)}
+      cors: ${file(partials/common/cors.yml)}
+      documentation:
+        summary: "POST Match"
+        description: "Create new match"
+        requestHeaders:
+          - name: "Authorization"
+            description: "Authorization token is needed to access the endpoint."
+        methodResponses:
+          - statusCode: "200"
+            requestModels:
+              "application/json": MatchResponse
+          - statusCode: "500"
+iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+    Resource:
+      - Fn::GetAtt: [MatchesTable, Arn]
+      - Fn::GetAtt: [RecrodsTable, Arn]
