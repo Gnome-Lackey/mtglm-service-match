@@ -25,4 +25,4 @@ iamRoleStatements:
       - dynamodb:Query
     Resource:
       - Fn::GetAtt: [MatchesTable, Arn]
-      - Fn::GetAtt: [RecrodsTable, Arn]
+      - Fn::GetAtt: [RecordsTable, Arn]

@@ -29,4 +29,4 @@ iamRoleStatements:
       - dynamodb:PutItem
     Resource:
       - Fn::GetAtt: [MatchesTable, Arn]
-      - Fn::GetAtt: [RecrodsTable, Arn]
+      - Fn::GetAtt: [RecordsTable, Arn]
