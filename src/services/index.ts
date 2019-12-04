@@ -44,12 +44,15 @@ const buildResponse = (
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const matchItem = matchMapper.toCreateItem();
-  const recordAItem = recordMapper.toCreateItem({ ...data.playerA, match: matchItem.matchId });
-  const recordBItem = recordMapper.toCreateItem({ ...data.playerB, match: matchItem.matchId });
+  const recordAItem = recordMapper.toCreateItem(matchItem.matchId, data.playerA);
+  const recordBItem = recordMapper.toCreateItem(matchItem.matchId, data.playerB);
 
   const { matchId } = matchItem;
   const { recordId: recordAId } = recordAItem;
   const { recordId: recordBId } = recordBItem;
+
+  matchItem.playerARecordId = recordAId;
+  matchItem.playerBRecordId = recordBId;
 
   const promises = await Promise.all([
     matchClient.create({ matchId }, matchItem),
