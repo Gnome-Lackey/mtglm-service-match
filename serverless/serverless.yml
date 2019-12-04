@@ -10,6 +10,8 @@ provider:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
     MATCH_TABLE_NAME: ${self:provider.stage}-mtglm-matches
     RECORD_TABLE_NAME: ${self:provider.stage}-mtglm-records
+    PLAYER_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
     USER_POOL_ID:
       Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
 
@@ -36,9 +38,9 @@ resources:
 
 custom:
   documentation: ${file(partials/documentation.yml)}
-  userPoolArn: 
+  userPoolArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolArn
-  userPoolName: 
+  userPoolName:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
 
 functions:
