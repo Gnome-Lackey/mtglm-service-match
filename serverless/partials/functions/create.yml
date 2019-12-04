@@ -27,6 +27,7 @@ iamRoleStatements:
     Action:
       - dynamodb:GetItem
       - dynamodb:PutItem
+      - dynamodb:UpdateItem
     Resource:
       - Fn::GetAtt: [MatchesTable, Arn]
       - Fn::GetAtt: [RecordsTable, Arn]
