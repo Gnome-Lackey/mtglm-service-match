@@ -73,11 +73,11 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 
   const playerBRecordUpdate = {
     totalMatchWins: isPlayerAWinner
-      ? (players[1].totalMatchWins as number) + 1
-      : (players[1].totalMatchWins as number),
+      ? (players[1].totalMatchWins as number)
+      : (players[1].totalMatchWins as number) + 1,
     totalMatchLosses: isPlayerAWinner
-      ? (players[1].totalMatchLosses as number)
-      : (players[1].totalMatchLosses as number) + 1
+      ? (players[1].totalMatchLosses as number) + 1
+      : (players[1].totalMatchLosses as number)
   };
 
   console.log(JSON.stringify(playerARecordUpdate));
