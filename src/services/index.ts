@@ -58,8 +58,6 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     playerClient.fetchByKey({ playerId: recordBPlayerId })
   ]);
 
-  console.log(JSON.stringify(players));
-
   const isPlayerAWinner = recordAWins > recordBWins;
 
   const playerARecordUpdate = {
@@ -68,7 +66,8 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
       : (players[0].totalMatchWins as number),
     totalMatchLosses: isPlayerAWinner
       ? (players[0].totalMatchLosses as number)
-      : (players[0].totalMatchLosses as number) + 1
+      : (players[0].totalMatchLosses as number) + 1,
+    matchIds: [matchId]
   };
 
   const playerBRecordUpdate = {
@@ -77,11 +76,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
       : (players[1].totalMatchWins as number) + 1,
     totalMatchLosses: isPlayerAWinner
       ? (players[1].totalMatchLosses as number) + 1
-      : (players[1].totalMatchLosses as number)
+      : (players[1].totalMatchLosses as number),
+    matchIds: [matchId]
   };
-
-  console.log(JSON.stringify(playerARecordUpdate));
-  console.log(JSON.stringify(playerBRecordUpdate));
 
   matchItem.playerARecordId = recordAId;
   matchItem.playerBRecordId = recordBId;
@@ -93,8 +90,6 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     playerClient.update({ playerId: recordAPlayerId }, playerARecordUpdate),
     playerClient.update({ playerId: recordBPlayerId }, playerBRecordUpdate)
   ]);
-
-  console.log(JSON.stringify(promises));
 
   return buildResponse(promises[0], promises[1], promises[2]);
 };
