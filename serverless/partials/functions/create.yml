@@ -27,8 +27,12 @@ iamRoleStatements:
     Action:
       - dynamodb:GetItem
       - dynamodb:PutItem
-      - dynamodb:UpdateItem
     Resource:
       - Fn::GetAtt: [MatchesTable, Arn]
       - Fn::GetAtt: [RecordsTable, Arn]
+  - Effect: Allow
+    Action:
+      - dynamodb:GetItem
+      - dynamodb:UpdateItem
+    Resource:
       - Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
