@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "CreateMatchSchema",
-  "required": ["playerA", "playerB", "set"],
+  "required": ["playerA", "playerB", "season"],
   "properties": {
     "playerA": {
       "type": "object",
@@ -38,7 +38,7 @@
         }
       }
     },
-    "Season": {
+    "season": {
       "type": "string",
       "title": "MatchSeasonId"
     }
