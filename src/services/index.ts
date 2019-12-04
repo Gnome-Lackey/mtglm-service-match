@@ -58,6 +58,8 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     playerClient.fetchByKey({ playerId: recordBPlayerId })
   ]);
 
+  console.log(JSON.stringify(players));
+
   const isPlayerAWinner = recordAWins > recordBWins;
 
   const playerARecordUpdate = {
@@ -78,6 +80,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
       : (players[1].totalMatchLosses as number) + 1
   };
 
+  console.log(JSON.stringify(playerARecordUpdate));
+  console.log(JSON.stringify(playerBRecordUpdate));
+
   matchItem.playerARecordId = recordAId;
   matchItem.playerBRecordId = recordBId;
 
@@ -88,6 +93,8 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     playerClient.update({ playerId: recordAPlayerId }, playerARecordUpdate),
     playerClient.update({ playerId: recordBPlayerId }, playerBRecordUpdate)
   ]);
+
+  console.log(JSON.stringify(promises));
 
   return buildResponse(promises[0], promises[1], promises[2]);
 };
