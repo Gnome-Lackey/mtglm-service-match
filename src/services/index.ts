@@ -10,13 +10,15 @@ import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
 
 import {
   PROPERTIES_RECORD,
-  PROPERTIES_MATCH
+  PROPERTIES_MATCH,
+  PROPERTIES_PLAYER
 } from "mtglm-service-sdk/build/constants/mutable_properties";
 
-const { MATCH_TABLE_NAME, RECORD_TABLE_NAME } = process.env;
+const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME } = process.env;
 
 const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
 const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
+const playerClient = new MTGLMDynamoClient(PLAYER_TABLE_NAME, PROPERTIES_PLAYER);
 
 const buildResponse = (
   match: AttributeMap,
@@ -48,8 +50,33 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
   const recordBItem = recordMapper.toCreateItem(matchItem.matchId, data.playerB);
 
   const { matchId } = matchItem;
-  const { recordId: recordAId } = recordAItem;
-  const { recordId: recordBId } = recordBItem;
+  const { playerId: recordAPlayerId, recordId: recordAId, wins: recordAWins } = recordAItem;
+  const { playerId: recordBPlayerId, recordId: recordBId, wins: recordBWins } = recordBItem;
+
+  const players = await Promise.all([
+    playerClient.fetchByKey({ playerId: recordAPlayerId }),
+    playerClient.fetchByKey({ playerId: recordBPlayerId })
+  ]);
+
+  const isPlayerAWinner = recordAWins > recordBWins;
+
+  const playerARecordUpdate = {
+    totalMatchWins: isPlayerAWinner
+      ? (players[0].totalMatchWins as number) + 1
+      : (players[0].totalMatchWins as number),
+    totalMatchLosses: isPlayerAWinner
+      ? (players[0].totalMatchLosses as number)
+      : (players[0].totalMatchLosses as number) + 1
+  };
+
+  const playerBRecordUpdate = {
+    totalMatchWins: isPlayerAWinner
+      ? (players[1].totalMatchWins as number) + 1
+      : (players[1].totalMatchWins as number),
+    totalMatchLosses: isPlayerAWinner
+      ? (players[1].totalMatchLosses as number)
+      : (players[1].totalMatchLosses as number) + 1
+  };
 
   matchItem.playerARecordId = recordAId;
   matchItem.playerBRecordId = recordBId;
@@ -57,7 +84,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
   const promises = await Promise.all([
     matchClient.create({ matchId }, matchItem),
     recordClient.create({ recordId: recordAId, matchId }, recordAItem),
-    recordClient.create({ recordId: recordBId, matchId }, recordBItem)
+    recordClient.create({ recordId: recordBId, matchId }, recordBItem),
+    playerClient.update({ playerId: recordAPlayerId }, playerARecordUpdate),
+    playerClient.update({ playerId: recordBPlayerId }, playerBRecordUpdate)
   ]);
 
   return buildResponse(promises[0], promises[1], promises[2]);

@@ -30,3 +30,4 @@ iamRoleStatements:
     Resource:
       - Fn::GetAtt: [MatchesTable, Arn]
       - Fn::GetAtt: [RecordsTable, Arn]
+      - Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
