@@ -10,39 +10,39 @@ export const create = async (data: MatchCreateRequest): Promise<LambdaResponse> 
   try {
     const result = await service.create(data);
 
-    logSuccess("DYNAMO", "POST mach", result);
+    logSuccess("DYNAMO", "POST match", result);
 
     return handleSuccess(result);
   } catch (error) {
-    logFailure("DYNAMO", "POST mach", error);
+    logFailure("DYNAMO", "POST match", error);
 
     return handleError(error);
   }
 };
 
-export const get = async (machId: string): Promise<LambdaResponse> => {
+export const get = async (matchId: string): Promise<LambdaResponse> => {
   try {
-    const result = await service.get(machId);
+    const result = await service.get(matchId);
 
-    logSuccess("DYNAMO", "GET mach", result);
+    logSuccess("DYNAMO", "GET match", result);
 
     return handleSuccess(result);
   } catch (error) {
-    logFailure("DYNAMO", "GET mach", error);
+    logFailure("DYNAMO", "GET match", error);
 
     return handleError(error);
   }
 };
 
-export const remove = async (machId: string): Promise<LambdaResponse> => {
+export const remove = async (matchId: string): Promise<LambdaResponse> => {
   try {
-    const result = await service.remove(machId);
+    const result = await service.remove(matchId);
 
-    logSuccess("DYNAMO", "DELETE mach", result);
+    logSuccess("DYNAMO", "DELETE match", result);
 
     return handleSuccess(result);
   } catch (error) {
-    logFailure("DYNAMO", "DELETE mach", error);
+    logFailure("DYNAMO", "DELETE match", error);
 
     return handleError(error);
   }
