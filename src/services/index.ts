@@ -33,11 +33,13 @@ const buildResponse = (
     id: matchNode.matchId,
     playerARecord: {
       ...recordMapper.toView(recordANode),
+      losses: recordBNode.wins,
       player: recordANode.playerId,
       match: matchNode.matchId
     },
     playerBRecord: {
       ...recordMapper.toView(recordBNode),
+      losses: recordANode.wins,
       player: recordBNode.playerId,
       match: matchNode.matchId
     }
