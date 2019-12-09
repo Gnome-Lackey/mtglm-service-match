@@ -6,37 +6,25 @@
     "type": "object",
     "title": "Match",
     "properties": {
-      "playerA": {
-        "type": "object",
-        "properties": {
+      "players": {
+        "type": "array",
+        "items": {
           "player": {
-            "type": "string",
-            "title": "PlayerAId"
-          },
-          "wins": {
-            "type": "integer",
-            "title": "PlayerAWins"
-          },
-          "losses": {
-            "type": "integer",
-            "title": "PlayerALosses"
-          }
-        }
-      },
-      "playerB": {
-        "type": "object",
-        "properties": {
-          "player": {
-            "type": "string",
-            "title": "PlayerBId"
-          },
-          "wins": {
-            "type": "integer",
-            "title": "PlayerBWins"
-          },
-          "losses": {
-            "type": "integer",
-            "title": "PlayerBLosses"
+            "type": "object",
+            "properties": {
+              "player": {
+                "type": "string",
+                "title": "PlayerId"
+              },
+              "wins": {
+                "type": "integer",
+                "title": "PlayerWins"
+              },
+              "losses": {
+                "type": "integer",
+                "title": "PlayerLosses"
+              }
+            }
           }
         }
       },

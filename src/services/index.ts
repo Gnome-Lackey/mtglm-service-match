@@ -20,90 +20,66 @@ const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
 const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
 const playerClient = new MTGLMDynamoClient(PLAYER_TABLE_NAME, PROPERTIES_PLAYER);
 
-const buildResponse = (
-  match: AttributeMap,
-  recordA: AttributeMap,
-  recordB: AttributeMap
-): MatchResponse => {
-  const matchNode = matchMapper.toNode(match);
-  const recordANode = recordMapper.toNode(recordA);
-  const recordBNode = recordMapper.toNode(recordB);
+const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[]): MatchResponse => {
+  const matchNode = matchMapper.toNode(matchResult);
+  const recordNodes = recordResults.map(recordMapper.toNode);
+
+  const totalGames = recordNodes.reduce((total, record) => total + record.wins, 0);
 
   return {
     id: matchNode.matchId,
-    playerARecord: {
-      ...recordMapper.toView(recordANode),
-      losses: recordBNode.wins,
-      player: recordANode.playerId,
+    players: recordNodes.map((recordNode) => ({
+      ...recordMapper.toView(recordNode),
+      losses: totalGames - recordNode.wins,
+      player: recordNode.playerId,
       match: matchNode.matchId
-    },
-    playerBRecord: {
-      ...recordMapper.toView(recordBNode),
-      losses: recordANode.wins,
-      player: recordBNode.playerId,
-      match: matchNode.matchId
-    }
+    }))
   };
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const matchItem = matchMapper.toCreateItem();
-  const recordAItem = recordMapper.toCreateItem(matchItem.matchId, data.playerA);
-  const recordBItem = recordMapper.toCreateItem(matchItem.matchId, data.playerB);
+  const records = data.players.map((playerRecord) =>
+    recordMapper.toCreateItem(matchItem.matchId, playerRecord)
+  );
 
-  const { matchId } = matchItem;
-  const { playerId: recordAPlayerId, recordId: recordAId, wins: recordAWins } = recordAItem;
-  const { playerId: recordBPlayerId, recordId: recordBId, wins: recordBWins } = recordBItem;
+  matchItem.playerRecords = records.map((record) => record.recordId);
 
-  const players = await Promise.all([
-    playerClient.fetchByKey({ playerId: recordAPlayerId }),
-    playerClient.fetchByKey({ playerId: recordBPlayerId })
-  ]);
+  const recordResults = await Promise.all(
+    records.map(async (record) => {
+      const player = await playerClient.fetchByKey({ playerId: record.playerId });
 
-  const isPlayerAWinner = recordAWins > recordBWins;
+      const isPlayerAWinner = records.every((nextRecord) => record.wins > nextRecord.wins);
 
-  const playerARecordUpdate = {
-    totalMatchWins: isPlayerAWinner
-      ? (players[0].totalMatchWins as number) + 1
-      : (players[0].totalMatchWins as number),
-    totalMatchLosses: isPlayerAWinner
-      ? (players[0].totalMatchLosses as number)
-      : (players[0].totalMatchLosses as number) + 1,
-    matchIds: [matchId]
-  };
+      const playerRecordUpdate = {
+        totalMatchWins: isPlayerAWinner
+          ? (player.totalMatchWins as number) + 1
+          : (player.totalMatchWins as number),
+        totalMatchLosses: isPlayerAWinner
+          ? (player.totalMatchLosses as number)
+          : (player.totalMatchLosses as number) + 1,
+        matchIds: [matchItem.matchId]
+      };
 
-  const playerBRecordUpdate = {
-    totalMatchWins: isPlayerAWinner
-      ? (players[1].totalMatchWins as number)
-      : (players[1].totalMatchWins as number) + 1,
-    totalMatchLosses: isPlayerAWinner
-      ? (players[1].totalMatchLosses as number) + 1
-      : (players[1].totalMatchLosses as number),
-    matchIds: [matchId]
-  };
+      playerClient.update({ playerId: player.playerId as string }, playerRecordUpdate);
 
-  matchItem.playerARecordId = recordAId;
-  matchItem.playerBRecordId = recordBId;
+      return recordClient.create({ recordId: record.recordId, matchId: matchItem.matchId }, record);
+    })
+  );
 
-  const promises = await Promise.all([
-    matchClient.create({ matchId }, matchItem),
-    recordClient.create({ recordId: recordAId, matchId }, recordAItem),
-    recordClient.create({ recordId: recordBId, matchId }, recordBItem),
-    playerClient.update({ playerId: recordAPlayerId }, playerARecordUpdate),
-    playerClient.update({ playerId: recordBPlayerId }, playerBRecordUpdate)
-  ]);
+  const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);
 
-  return buildResponse(promises[0], promises[1], promises[2]);
+  return buildResponse(matchResult, recordResults);
 };
 
 export const get = async (matchId: string): Promise<MatchResponse> => {
   const matchResult = await matchClient.fetchByKey({ matchId });
-  const recordAResults = await recordClient.fetchByKeys([
-    { recordId: matchResult.matchARecordId as string, matchId },
-    { recordId: matchResult.matchARecordId as string, matchId }
-  ]);
+  const matchRecords = matchResult.playerRecords as string[];
+  const recordAResults = await recordClient.fetchByKeys(
+    matchRecords.map((recordId) => ({ recordId, matchId }))
+  );
 
-  return buildResponse(matchResult, recordAResults[0], recordAResults[1]);
+  return buildResponse(matchResult, recordAResults);
 };
 
 export const remove = async (matchId: string): Promise<SuccessResponse> => {
