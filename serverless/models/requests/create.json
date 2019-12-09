@@ -14,10 +14,6 @@
         "wins": {
           "type": "integer",
           "title": "PlayerAWins"
-        },
-        "losses": {
-          "type": "integer",
-          "title": "PlayerALosses"
         }
       }
     },
@@ -31,10 +27,6 @@
         "wins": {
           "type": "integer",
           "title": "PlayerBWins"
-        },
-        "losses": {
-          "type": "integer",
-          "title": "PlayerBLosses"
         }
       }
     },
