@@ -39,7 +39,7 @@ const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[])
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const matchItem = matchMapper.toCreateItem();
-  
+
   const records = data.records.map((playerRecord) =>
     recordMapper.toCreateItem(matchItem.matchId, playerRecord)
   );
@@ -50,15 +50,21 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     records.map(async (record) => {
       const player = await playerClient.fetchByKey({ playerId: record.playerId });
 
-      const isPlayerAWinner = records.every((nextRecord) => record.wins > nextRecord.wins);
+      const isWinner = records
+        .filter((nextRecord) => nextRecord.playerId !== record.playerId)
+        .every((nextRecord) => nextRecord.wins < record.wins);
+
+      const totalWins = isWinner
+        ? (player.totalMatchWins as number) + 1
+        : (player.totalMatchWins as number);
+
+      const totalLosses = isWinner
+        ? (player.totalMatchLosses as number)
+        : (player.totalMatchLosses as number) + 1;
 
       const playerRecordUpdate = {
-        totalMatchWins: isPlayerAWinner
-          ? (player.totalMatchWins as number) + 1
-          : (player.totalMatchWins as number),
-        totalMatchLosses: isPlayerAWinner
-          ? (player.totalMatchLosses as number)
-          : (player.totalMatchLosses as number) + 1,
+        totalMatchWins: totalWins,
+        totalMatchLosses: totalLosses,
         matchIds: [matchItem.matchId]
       };
 
