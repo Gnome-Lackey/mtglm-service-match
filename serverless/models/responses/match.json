@@ -3,7 +3,7 @@
   "type": "object",
   "title": "MatchResponseSchema",
   "properties": {
-    "players": {
+    "records": {
       "type": "array",
       "items": {
         "type": "object",

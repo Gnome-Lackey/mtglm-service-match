@@ -39,7 +39,8 @@ const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[])
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const matchItem = matchMapper.toCreateItem();
-  const records = data.players.map((playerRecord) =>
+  
+  const records = data.records.map((playerRecord) =>
     recordMapper.toCreateItem(matchItem.matchId, playerRecord)
   );
 

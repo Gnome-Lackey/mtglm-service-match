@@ -6,7 +6,7 @@
     "type": "object",
     "title": "Match",
     "properties": {
-      "players": {
+      "records": {
         "type": "array",
         "items": {
           "type": "object",
