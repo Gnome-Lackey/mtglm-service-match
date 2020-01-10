@@ -7,17 +7,15 @@
     "players": {
       "type": "array",
       "items": {
-        "player": {
-          "type": "object",
-          "properties": {
-            "player": {
-              "type": "string",
-              "title": "PlayerId"
-            },
-            "wins": {
-              "type": "integer",
-              "title": "PlayerWins"
-            },
+        "type": "object",
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "PlayerId"
+          },
+          "wins": {
+            "type": "integer",
+            "title": "PlayerWins"
           }
         }
       }
