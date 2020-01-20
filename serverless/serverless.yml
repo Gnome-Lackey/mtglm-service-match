@@ -47,3 +47,4 @@ functions:
   Get: ${file(partials/functions/get.yml)}
   Create: ${file(partials/functions/create.yml)}
   Delete: ${file(partials/functions/delete.yml)}
+  Query: ${file(partials/functions/query.yml)}
