@@ -29,7 +29,5 @@ resources:
     description: "Creates a new match."
   - path: Get
     description: "Retrieves a match."
-  - path: Query
-    description: "Retrieves all matches."
   - path: Delete
     description: "Deletes a match."
