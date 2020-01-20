@@ -5,6 +5,7 @@ import { LambdaResponse } from "mtglm-service-sdk/build/models/Lambda";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
 
 import * as service from "../services";
+import { SeasonQueryParams } from "mtglm-service-sdk/build/models/QueryParameters";
 
 export const create = async (data: MatchCreateRequest): Promise<LambdaResponse> => {
   try {
@@ -33,6 +34,21 @@ export const get = async (matchId: string): Promise<LambdaResponse> => {
     return handleError(error);
   }
 };
+
+export const query = async (queryParams: SeasonQueryParams): Promise<LambdaResponse> => {
+  try {
+    const result = await service.query(queryParams);
+
+    logSuccess("DYNAMO", "GET all match", result);
+
+    return handleSuccess(result);
+  } catch (error) {
+    logFailure("DYNAMO", "GET all match", error);
+
+    return handleError(error);
+  }
+};
+
 
 export const remove = async (matchId: string): Promise<LambdaResponse> => {
   try {

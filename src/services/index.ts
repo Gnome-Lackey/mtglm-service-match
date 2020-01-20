@@ -4,6 +4,7 @@ import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
 
 import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
 import * as recordMapper from "mtglm-service-sdk/build/mappers/record";
+import * as queryMapper from "mtglm-service-sdk/build/mappers/query";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
@@ -13,6 +14,7 @@ import {
   PROPERTIES_MATCH,
   PROPERTIES_PLAYER
 } from "mtglm-service-sdk/build/constants/mutable_properties";
+import { SeasonQueryParams } from "mtglm-service-sdk/build/models/QueryParameters";
 
 const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME } = process.env;
 
@@ -28,6 +30,7 @@ const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[])
 
   return {
     id: matchNode.matchId,
+    season: matchNode.seasonId,
     players: recordNodes.map((recordNode) => ({
       ...recordMapper.toView(recordNode),
       losses: totalGames - recordNode.wins,
@@ -38,7 +41,7 @@ const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[])
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const matchItem = matchMapper.toCreateItem();
+  const matchItem = matchMapper.toCreateItem(data);
 
   const records = data.records.map((playerRecord) =>
     recordMapper.toCreateItem(matchItem.matchId, playerRecord)
@@ -87,6 +90,24 @@ export const get = async (matchId: string): Promise<MatchResponse> => {
   );
 
   return buildResponse(matchResult, recordAResults);
+};
+
+export const query = async (queryParams: SeasonQueryParams): Promise<MatchResponse[]> => {
+  const filters = queryMapper.toSeasonFilters(queryParams);
+
+  const matchResults = await matchClient.query(filters);
+
+  return await Promise.all(
+    matchResults.map(async (matchResult) => {
+      const matchRecords = matchResult.playerRecords as string[];
+      const matchId = matchResult.matchId as string;
+      const recordResults = await recordClient.fetchByKeys(
+        matchRecords.map((recordId: string) => ({ recordId, matchId }))
+      );
+
+      return buildResponse(matchResult, recordResults);
+    })
+  );
 };
 
 export const remove = async (matchId: string): Promise<SuccessResponse> => {
