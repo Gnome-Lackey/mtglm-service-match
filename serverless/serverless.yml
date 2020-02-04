@@ -36,11 +36,11 @@ custom:
   userPoolName:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
   matchTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-matchTableArn
+    Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
   recordTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-recordTableArn
+    Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
   playerTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-playerTableArn
+    Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
