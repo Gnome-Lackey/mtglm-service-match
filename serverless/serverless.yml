@@ -28,13 +28,6 @@ plugins:
 resources:
   Resources:
     MatchesApiGatewayAuthorizer: ${file(partials/apiGatewayAuthorizer.yml)}
-    MatchesTable: ${file(partials/dynamodb/matches.yml)}
-    RecordsTable: ${file(partials/dynamodb/records.yml)}
-  Outputs:
-    matchTableArn: ${file(partials/outputs/MatchesTableArn.yml)}
-    matchTableName: ${file(partials/outputs/MatchesTableName.yml)}
-    recordTableArn: ${file(partials/outputs/RecordsTableArn.yml)}
-    recordTableName: ${file(partials/outputs/RecordsTableName.yml)}
 
 custom:
   documentation: ${file(partials/documentation.yml)}
@@ -42,6 +35,12 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolArn
   userPoolName:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
+  matchTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-matchTableArn
+  recordTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-recordTableArn
+  playerTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-playerTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
