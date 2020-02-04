@@ -8,8 +8,10 @@ provider:
   memorySize: 128
   environment:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
-    MATCH_TABLE_NAME: ${self:provider.stage}-mtglm-matches
-    RECORD_TABLE_NAME: ${self:provider.stage}-mtglm-records
+    MATCH_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
+    RECORD_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
     PLAYER_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
     USER_POOL_ID:
