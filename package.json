@@ -30,7 +30,7 @@
     "aws-sdk": "^2.482.0",
     "global": "^4.4.0",
     "jwt-decode": "^2.2.0",
-    "mtglm-service-sdk": "Gnome-Lackey/mtglm-service-sdk#qa",
+    "mtglm-service-sdk": "Gnome-Lackey/mtglm-service-sdk#develop",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-iam-roles-per-function": "^2.0.1",
     "typescript": "^3.6.4",
