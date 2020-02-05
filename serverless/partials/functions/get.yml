@@ -24,5 +24,5 @@ iamRoleStatements:
     Action:
       - dynamodb:Query
     Resource:
-      - Fn::GetAtt: [MatchesTable, Arn]
-      - Fn::GetAtt: [RecordsTable, Arn]
+      - ${self:custom.matchTableArn}
+      - ${self:custom.recordTableArn}

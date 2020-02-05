@@ -8,8 +8,10 @@ provider:
   memorySize: 128
   environment:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
-    MATCH_TABLE_NAME: ${self:provider.stage}-mtglm-matches
-    RECORD_TABLE_NAME: ${self:provider.stage}-mtglm-records
+    MATCH_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
+    RECORD_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
     PLAYER_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
     USER_POOL_ID:
@@ -28,13 +30,6 @@ plugins:
 resources:
   Resources:
     MatchesApiGatewayAuthorizer: ${file(partials/apiGatewayAuthorizer.yml)}
-    MatchesTable: ${file(partials/dynamodb/matches.yml)}
-    RecordsTable: ${file(partials/dynamodb/records.yml)}
-  Outputs:
-    matchTableArn: ${file(partials/outputs/MatchesTableArn.yml)}
-    matchTableName: ${file(partials/outputs/MatchesTableName.yml)}
-    recordTableArn: ${file(partials/outputs/RecordsTableArn.yml)}
-    recordTableName: ${file(partials/outputs/RecordsTableName.yml)}
 
 custom:
   documentation: ${file(partials/documentation.yml)}
@@ -42,6 +37,12 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolArn
   userPoolName:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
+  matchTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
+  recordTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
+  playerTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}

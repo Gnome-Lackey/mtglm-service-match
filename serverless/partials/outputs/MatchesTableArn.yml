@@ -1,5 +1,0 @@
-Description: 'ARN for the dynamo matches table'
-Value:
-  "Fn::GetAtt": [MatchesTable, Arn]
-Export:
-  Name: ${self:provider.stage}-mtglm-MatchTableArn
