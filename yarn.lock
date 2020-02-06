@@ -1976,9 +1976,9 @@ msgpack-lite@0.1.26:
     int64-buffer "^0.1.9"
     isarray "^1.0.0"
 
-mtglm-service-sdk@Gnome-Lackey/mtglm-service-sdk#develop:
+mtglm-service-sdk@Gnome-Lackey/mtglm-service-sdk#dev:
   version "1.0.0"
-  resolved "https://codeload.github.com/Gnome-Lackey/mtglm-service-sdk/tar.gz/e3d676ba24a7e54173d20ce7714c2c34fba43ba6"
+  resolved "https://codeload.github.com/Gnome-Lackey/mtglm-service-sdk/tar.gz/e93f7eac9fb443908bbaa2a43071849993aef112"
   dependencies:
     "@types/aws-sdk" "^2.7.0"
     "@types/jwt-decode" "^2.2.1"
