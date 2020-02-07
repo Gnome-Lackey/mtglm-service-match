@@ -63,10 +63,12 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
         ? (player.totalMatchLosses as number)
         : (player.totalMatchLosses as number) + 1;
 
+      const matchIds = (player.matchIds as string[]) || [];
+
       const playerRecordUpdate = {
         totalMatchWins: totalWins,
         totalMatchLosses: totalLosses,
-        matchIds: [matchItem.matchId]
+        matchIds: [...matchIds, matchItem.matchId]
       };
 
       playerClient.update({ playerId: player.playerId as string }, playerRecordUpdate);
