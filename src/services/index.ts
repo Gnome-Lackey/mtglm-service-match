@@ -4,6 +4,7 @@ import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
 
 import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
 import * as recordMapper from "mtglm-service-sdk/build/mappers/record";
+import * as playerMapper from "mtglm-service-sdk/build/mappers/player";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
@@ -11,14 +12,25 @@ import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
 import {
   PROPERTIES_RECORD,
   PROPERTIES_MATCH,
-  PROPERTIES_PLAYER
+  PROPERTIES_PLAYER,
+  PROPERTIES_PLAYER_SEASON_METADATA
 } from "mtglm-service-sdk/build/constants/mutable_properties";
+import { RecordDynamoCreateItem } from "mtglm-service-sdk/build/models/Items";
 
-const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME } = process.env;
+const {
+  MATCH_TABLE_NAME,
+  PLAYER_TABLE_NAME,
+  RECORD_TABLE_NAME,
+  PLAYER_SEASON_TABLE_NAME
+} = process.env;
 
 const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
 const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
 const playerClient = new MTGLMDynamoClient(PLAYER_TABLE_NAME, PROPERTIES_PLAYER);
+const playerSeasonMetadataClient = new MTGLMDynamoClient(
+  PLAYER_SEASON_TABLE_NAME,
+  PROPERTIES_PLAYER_SEASON_METADATA
+);
 
 const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[]): MatchResponse => {
   const matchNode = matchMapper.toNode(matchResult);
@@ -38,16 +50,8 @@ const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[])
   };
 };
 
-export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const matchItem = matchMapper.toCreateItem(data);
-
-  const records = data.records.map((playerRecord) =>
-    recordMapper.toCreateItem(matchItem.matchId, playerRecord)
-  );
-
-  matchItem.playerRecords = records.map((record) => record.recordId);
-
-  const recordResults = await Promise.all(
+const updatePlayerRecord = async (records: RecordDynamoCreateItem[]): Promise<AttributeMap[]> =>
+  await Promise.all(
     records.map(async (record) => {
       const player = await playerClient.fetchByKey({ playerId: record.playerId });
 
@@ -63,20 +67,95 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
         ? (player.totalMatchLosses as number)
         : (player.totalMatchLosses as number) + 1;
 
-      const matchIds = (player.matchIds as string[]) || [];
-
       const playerRecordUpdate = {
         totalMatchWins: totalWins,
-        totalMatchLosses: totalLosses,
-        matchIds: [...matchIds, matchItem.matchId]
+        totalMatchLosses: totalLosses
       };
 
-      playerClient.update({ playerId: player.playerId as string }, playerRecordUpdate);
-
-      return recordClient.create({ recordId: record.recordId, matchId: matchItem.matchId }, record);
+      return playerClient.update({ playerId: player.playerId as string }, playerRecordUpdate);
     })
   );
 
+const updatePlayerSeasonMetadata = async (
+  seasonId: string,
+  records: RecordDynamoCreateItem[]
+): Promise<AttributeMap[]> => {
+  if (records.length !== 2) {
+    return null;
+  }
+
+  const playerA = records[0];
+  const playerB = records[1];
+
+  const metadataResults = await playerSeasonMetadataClient.custom(
+    {
+      "#season": "seasonId",
+      "#player": "playerId",
+      "#opponentIds": "playedOpponentIds"
+    },
+    {
+      ":season": { S: seasonId },
+      ":playerA": { S: playerA.playerId },
+      ":playerB": { S: playerB.playerId }
+    },
+    "#player = :playerA OR #player = :playerB AND #season = :season AND NOT contains(#opponentIds, :playerA) AND NOT contains(#opponentIds, :playerB)"
+  );
+
+  if (!metadataResults.length) {
+    return null;
+  }
+
+  const [metadataNodeA, metadataNodeB] = metadataResults.map(playerMapper.toSeasonMetadataNode);
+
+  const isPlayerAWinner = playerA.wins > playerB.wins;
+
+  await playerSeasonMetadataClient.update(
+    { playerSeasonMetaId: metadataNodeA.playerSeasonMetaId, playerId: playerA.playerId },
+    {
+      seasonWins: isPlayerAWinner ? metadataNodeA.seasonWins + 1 : metadataNodeA.seasonWins,
+      seasonLosses: isPlayerAWinner ? metadataNodeA.seasonLosses : metadataNodeA.seasonLosses + 1,
+      totalWins: isPlayerAWinner ? metadataNodeA.totalWins + 1 : metadataNodeA.totalWins,
+      totalLosses: isPlayerAWinner ? metadataNodeA.totalLosses : metadataNodeA.totalLosses + 1,
+      playedOpponentIds: [...metadataNodeA.playedOpponentIds, playerB.playerId]
+    }
+  );
+
+  await playerSeasonMetadataClient.update(
+    { playerSeasonMetaId: metadataNodeB.playerSeasonMetaId, playerId: playerB.playerId },
+    {
+      seasonWins: isPlayerAWinner ? metadataNodeB.seasonWins + 1 : metadataNodeB.seasonWins,
+      seasonLosses: isPlayerAWinner ? metadataNodeB.seasonLosses : metadataNodeB.seasonLosses + 1,
+      totalWins: isPlayerAWinner ? metadataNodeB.totalWins + 1 : metadataNodeB.totalWins,
+      totalLosses: isPlayerAWinner ? metadataNodeB.totalLosses : metadataNodeB.totalLosses + 1,
+      playedOpponentIds: [...metadataNodeB.playedOpponentIds, playerA.playerId]
+    }
+  );
+
+  return null;
+};
+
+const createRecords = async (
+  newMatchId: string,
+  records: RecordDynamoCreateItem[]
+): Promise<AttributeMap[]> =>
+  await Promise.all(
+    records.map(async (record) =>
+      recordClient.create({ recordId: record.recordId, matchId: newMatchId }, record)
+    )
+  );
+
+export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
+  const matchItem = matchMapper.toCreateItem(data);
+  const records = data.records.map((playerRecord) =>
+    recordMapper.toCreateItem(matchItem.matchId, playerRecord)
+  );
+
+  matchItem.playerRecords = records.map((record) => record.recordId);
+
+  await updatePlayerRecord(records);
+  await updatePlayerSeasonMetadata(matchItem.seasonId, records);
+
+  const recordResults = await createRecords(matchItem.matchId, records);
   const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);
 
   return buildResponse(matchResult, recordResults);
