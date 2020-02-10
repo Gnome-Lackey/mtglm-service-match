@@ -78,34 +78,20 @@ const updateSeasonMetadata = async (
 
   const playerA = records[0];
   const playerB = records[1];
+  const metadataKeys = records.map((record) => ({ seasonId, playerId: record.playerId }));
 
-  const metadataResults = await seasonMetadataClient.custom(
-    {
-      "#season": "seasonId",
-      "#player": "playerId",
-      "#opponentIds": "playedOpponentIds"
-    },
-    {
-      ":season": { S: seasonId },
-      ":playerA": { S: playerA.playerId },
-      ":playerB": { S: playerB.playerId }
-    },
-    "#player = :playerA OR #player = :playerB AND #season = :season AND NOT contains(#opponentIds, :playerA) AND NOT contains(#opponentIds, :playerB)"
-  );
-
-  if (!metadataResults.length) {
-    return null;
-  }
+  const metadataResults = await seasonMetadataClient.fetchByKeys(metadataKeys);
 
   const [metadataNodeA, metadataNodeB] = metadataResults.map(seasonMapper.toMetadataNode);
 
   const isPlayerAWinner = playerA.wins > playerB.wins;
+  const isSeasonMatch = metadataNodeA.playedOpponentIds.includes(metadataNodeB.playerId);
 
   await seasonMetadataClient.update(
     { playerId: playerA.playerId, seasonId },
     {
-      seasonWins: isPlayerAWinner ? metadataNodeA.seasonWins + 1 : metadataNodeA.seasonWins,
-      seasonLosses: isPlayerAWinner ? metadataNodeA.seasonLosses : metadataNodeA.seasonLosses + 1,
+      seasonWins: isSeasonMatch && isPlayerAWinner ? metadataNodeA.seasonWins + 1 : metadataNodeA.seasonWins,
+      seasonLosses: isSeasonMatch && !isPlayerAWinner ? metadataNodeA.seasonLosses + 1 : metadataNodeA.seasonLosses,
       totalWins: isPlayerAWinner ? metadataNodeA.totalWins + 1 : metadataNodeA.totalWins,
       totalLosses: isPlayerAWinner ? metadataNodeA.totalLosses : metadataNodeA.totalLosses + 1,
       playedOpponentIds: [...metadataNodeA.playedOpponentIds, playerB.playerId]
@@ -115,8 +101,8 @@ const updateSeasonMetadata = async (
   await seasonMetadataClient.update(
     { playerId: playerB.playerId, seasonId },
     {
-      seasonWins: isPlayerAWinner ? metadataNodeB.seasonWins + 1 : metadataNodeB.seasonWins,
-      seasonLosses: isPlayerAWinner ? metadataNodeB.seasonLosses : metadataNodeB.seasonLosses + 1,
+      seasonWins: isSeasonMatch && isPlayerAWinner ? metadataNodeB.seasonWins + 1 : metadataNodeB.seasonWins,
+      seasonLosses: isSeasonMatch && !isPlayerAWinner ? metadataNodeB.seasonLosses + 1: metadataNodeB.seasonLosses,
       totalWins: isPlayerAWinner ? metadataNodeB.totalWins + 1 : metadataNodeB.totalWins,
       totalLosses: isPlayerAWinner ? metadataNodeB.totalLosses : metadataNodeB.totalLosses + 1,
       playedOpponentIds: [...metadataNodeB.playedOpponentIds, playerA.playerId]
