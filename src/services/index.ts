@@ -17,12 +17,12 @@ import {
 } from "mtglm-service-sdk/build/constants/mutable_properties";
 import { RecordDynamoCreateItem } from "mtglm-service-sdk/build/models/Items";
 
-const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME, SEASON_TABLE_NAME } = process.env;
+const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME, SEASON_METADATA_TABLE_NAME } = process.env;
 
 const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
 const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
 const playerClient = new MTGLMDynamoClient(PLAYER_TABLE_NAME, PROPERTIES_PLAYER);
-const seasonMetadataClient = new MTGLMDynamoClient(SEASON_TABLE_NAME, PROPERTIES_SEASON_METADATA);
+const seasonMetadataClient = new MTGLMDynamoClient(SEASON_METADATA_TABLE_NAME, PROPERTIES_SEASON_METADATA);
 
 const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[]): MatchResponse => {
   const matchNode = matchMapper.toNode(matchResult);
