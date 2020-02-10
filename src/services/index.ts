@@ -4,7 +4,7 @@ import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
 
 import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
 import * as recordMapper from "mtglm-service-sdk/build/mappers/record";
-import * as playerMapper from "mtglm-service-sdk/build/mappers/player";
+import * as seasonMapper from "mtglm-service-sdk/build/mappers/season";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
@@ -13,24 +13,16 @@ import {
   PROPERTIES_RECORD,
   PROPERTIES_MATCH,
   PROPERTIES_PLAYER,
-  PROPERTIES_PLAYER_SEASON_METADATA
+  PROPERTIES_SEASON_METADATA
 } from "mtglm-service-sdk/build/constants/mutable_properties";
 import { RecordDynamoCreateItem } from "mtglm-service-sdk/build/models/Items";
 
-const {
-  MATCH_TABLE_NAME,
-  PLAYER_TABLE_NAME,
-  RECORD_TABLE_NAME,
-  PLAYER_SEASON_TABLE_NAME
-} = process.env;
+const { MATCH_TABLE_NAME, PLAYER_TABLE_NAME, RECORD_TABLE_NAME, SEASON_TABLE_NAME } = process.env;
 
 const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
 const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
 const playerClient = new MTGLMDynamoClient(PLAYER_TABLE_NAME, PROPERTIES_PLAYER);
-const playerSeasonMetadataClient = new MTGLMDynamoClient(
-  PLAYER_SEASON_TABLE_NAME,
-  PROPERTIES_PLAYER_SEASON_METADATA
-);
+const seasonMetadataClient = new MTGLMDynamoClient(SEASON_TABLE_NAME, PROPERTIES_SEASON_METADATA);
 
 const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[]): MatchResponse => {
   const matchNode = matchMapper.toNode(matchResult);
@@ -76,7 +68,7 @@ const updatePlayerRecord = async (records: RecordDynamoCreateItem[]): Promise<At
     })
   );
 
-const updatePlayerSeasonMetadata = async (
+const updateSeasonMetadata = async (
   seasonId: string,
   records: RecordDynamoCreateItem[]
 ): Promise<AttributeMap[]> => {
@@ -87,7 +79,7 @@ const updatePlayerSeasonMetadata = async (
   const playerA = records[0];
   const playerB = records[1];
 
-  const metadataResults = await playerSeasonMetadataClient.custom(
+  const metadataResults = await seasonMetadataClient.custom(
     {
       "#season": "seasonId",
       "#player": "playerId",
@@ -105,12 +97,12 @@ const updatePlayerSeasonMetadata = async (
     return null;
   }
 
-  const [metadataNodeA, metadataNodeB] = metadataResults.map(playerMapper.toSeasonMetadataNode);
+  const [metadataNodeA, metadataNodeB] = metadataResults.map(seasonMapper.toMetadataNode);
 
   const isPlayerAWinner = playerA.wins > playerB.wins;
 
-  await playerSeasonMetadataClient.update(
-    { playerSeasonMetaId: metadataNodeA.playerSeasonMetaId, playerId: playerA.playerId },
+  await seasonMetadataClient.update(
+    { playerId: playerA.playerId, seasonId },
     {
       seasonWins: isPlayerAWinner ? metadataNodeA.seasonWins + 1 : metadataNodeA.seasonWins,
       seasonLosses: isPlayerAWinner ? metadataNodeA.seasonLosses : metadataNodeA.seasonLosses + 1,
@@ -120,8 +112,8 @@ const updatePlayerSeasonMetadata = async (
     }
   );
 
-  await playerSeasonMetadataClient.update(
-    { playerSeasonMetaId: metadataNodeB.playerSeasonMetaId, playerId: playerB.playerId },
+  await seasonMetadataClient.update(
+    { playerId: playerB.playerId, seasonId },
     {
       seasonWins: isPlayerAWinner ? metadataNodeB.seasonWins + 1 : metadataNodeB.seasonWins,
       seasonLosses: isPlayerAWinner ? metadataNodeB.seasonLosses : metadataNodeB.seasonLosses + 1,
@@ -153,7 +145,7 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
   matchItem.playerRecords = records.map((record) => record.recordId);
 
   await updatePlayerRecord(records);
-  await updatePlayerSeasonMetadata(matchItem.seasonId, records);
+  await updateSeasonMetadata(matchItem.seasonId, records);
 
   const recordResults = await createRecords(matchItem.matchId, records);
   const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);

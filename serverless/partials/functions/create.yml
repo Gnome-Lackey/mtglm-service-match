@@ -39,4 +39,4 @@ iamRoleStatements:
     Action:
       - dynamodb:QueryItem
       - dynamodb:UpdateItem
-    Resource: ${self:custom.playerSeasonMetadataTableArn}
+    Resource: ${self:custom.SeasonMetadataTableArn}
