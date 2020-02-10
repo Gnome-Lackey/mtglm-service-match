@@ -14,6 +14,8 @@ provider:
       Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
     PLAYER_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
+    PLAYER_SEASON_METADATA_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerSeasonMetadataTableName
     USER_POOL_ID:
       Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
 
@@ -43,6 +45,8 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
   playerTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
+  playerSeasonMetadataTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerSeasonMetadataTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
