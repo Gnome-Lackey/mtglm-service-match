@@ -12,8 +12,6 @@ provider:
       Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
     RECORD_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
-    PLAYER_TABLE_NAME:
-      Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
     SEASON_METADATA_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableName
     USER_POOL_ID:
@@ -43,8 +41,6 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
   recordTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
-  playerTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
   SeasonMetadataTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableArn
 

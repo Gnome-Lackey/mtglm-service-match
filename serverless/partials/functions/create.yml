@@ -32,11 +32,6 @@ iamRoleStatements:
       - ${self:custom.recordTableArn}
   - Effect: Allow
     Action:
-      - dynamodb:GetItem
-      - dynamodb:UpdateItem
-    Resource: ${self:custom.playerTableArn}
-  - Effect: Allow
-    Action:
       - dynamodb:QueryItem
       - dynamodb:UpdateItem
     Resource: ${self:custom.SeasonMetadataTableArn}
