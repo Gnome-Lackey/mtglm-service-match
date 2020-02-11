@@ -7,7 +7,7 @@ phases:
     commands:
       - echo "Installing global dependencies ..."
       - apt-get install -y yarn
-      - yarn global add serverless eslint
+      - npm i --global serverless eslint
       - echo "Installed global dependencies"
   pre_build:
     commands:
