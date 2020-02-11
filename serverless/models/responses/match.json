@@ -22,6 +22,10 @@
     "Season": {
       "type": "string",
       "title": "MatchSeasonId"
+    },
+    "isSeasonPoint": {
+      "type": "boolean",
+      "title": "MatchSeasonPoint"
     }
   }
 }

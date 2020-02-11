@@ -25,6 +25,7 @@ events:
 iamRoleStatements:
   - Effect: Allow
     Action:
+      - dynamodb:QueryItem
       - dynamodb:GetItem
       - dynamodb:PutItem
     Resource:
