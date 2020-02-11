@@ -27,12 +27,13 @@ const seasonMetadataClient = new MTGLMDynamoClient(
 
 const buildResponse = (matchResult: AttributeMap, recordResults: AttributeMap[]): MatchResponse => {
   const matchNode = matchMapper.toNode(matchResult);
+  const matchView = matchMapper.toView(matchNode);
   const recordNodes = recordResults.map(recordMapper.toNode);
 
   const totalGames = recordNodes.reduce((total, record) => total + record.wins, 0);
 
   return {
-    id: matchNode.matchId,
+    ...matchView,
     season: matchNode.seasonId,
     players: recordNodes.map((recordNode) => ({
       ...recordMapper.toView(recordNode),
@@ -112,11 +113,16 @@ const createRecords = async (
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const matchItem = matchMapper.toCreateItem(data);
-  const records = data.records.map((playerRecord) =>
-    recordMapper.toCreateItem(matchItem.matchId, playerRecord)
-  );
+  const records = data.records.map((playerRecord) => recordMapper.toCreateItem(matchItem.matchId, playerRecord));
+  const recordIds = records.map((record) => record.recordId);
 
-  matchItem.playerRecords = records.map((record) => record.recordId);
+  const matchSearchResult = await matchClient.query({
+    recordIds,
+    isSeasonPoint: true
+  });
+
+  matchItem.isSeasonPoint = !matchSearchResult.length;
+  matchItem.playerRecords = recordIds;
 
   await updateSeasonMetadata(matchItem.seasonId, records);
 
