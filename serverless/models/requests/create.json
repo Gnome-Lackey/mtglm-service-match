@@ -2,22 +2,29 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "CreateMatchSchema",
-  "required": ["records", "season"],
+  "required": ["wins", "season", "games", "winner", "losers"],
   "properties": {
-    "records": {
+    "isSeasonPoint": {
+      "type": "boolean",
+      "title": "MatchIsSeasonPoint"
+    },
+    "wins": {
+      "type": "number",
+      "title": "MatchWins"
+    },
+    "games": {
+      "type": "number",
+      "title": "MatchGames"
+    },
+    "winner": {
+      "type": "string",
+      "title": "MatchWinner"
+    },
+    "losers": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "player": {
-            "type": "string",
-            "title": "PlayerId"
-          },
-          "wins": {
-            "type": "integer",
-            "title": "PlayerWins"
-          }
-        }
+        "type": "string",
+        "title": "MatchLosers"
       }
     },
     "season": {

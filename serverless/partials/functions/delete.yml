@@ -29,4 +29,3 @@ iamRoleStatements:
       - dynamodb:DeleteItem
     Resource:
       - ${self:custom.matchTableArn}
-      - ${self:custom.recordTableArn}

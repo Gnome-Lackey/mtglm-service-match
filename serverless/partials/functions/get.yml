@@ -25,4 +25,3 @@ iamRoleStatements:
       - dynamodb:Query
     Resource:
       - ${self:custom.matchTableArn}
-      - ${self:custom.recordTableArn}

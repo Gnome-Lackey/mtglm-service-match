@@ -10,8 +10,6 @@ provider:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
     MATCH_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
-    RECORD_TABLE_NAME:
-      Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
     SEASON_METADATA_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableName
     USER_POOL_ID:
@@ -39,8 +37,6 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
   matchTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
-  recordTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
   SeasonMetadataTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableArn
 
