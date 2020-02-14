@@ -4,10 +4,6 @@
   "title": "CreateMatchSchema",
   "required": ["wins", "season", "games", "winner", "losers"],
   "properties": {
-    "isSeasonPoint": {
-      "type": "boolean",
-      "title": "MatchIsSeasonPoint"
-    },
     "wins": {
       "type": "number",
       "title": "MatchWins"
