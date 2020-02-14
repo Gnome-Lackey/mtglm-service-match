@@ -109,7 +109,12 @@ const updateSeasonMetadata = async (
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const matchItem = matchMapper.toCreateItem(data);
+  const existingSeasonMatch = await matchClient.query({
+    winnerId: data.winner,
+    loserIds: data.losers
+  });
+
+  const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint: !existingSeasonMatch });
 
   const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);
 
