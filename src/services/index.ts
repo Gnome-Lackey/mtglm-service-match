@@ -38,47 +38,69 @@ const updateSeasonMetadata = async (
   matchResult: AttributeMap
 ): Promise<AttributeMap[]> => {
   const matchNode = matchMapper.toNode(matchResult);
-  
+
   const loserMetadataKeys = matchNode.loserIds.map((loserId) => ({ seasonId, playerId: loserId }));
   const loserMetadataResults = await seasonMetadataClient.fetchByKeys(loserMetadataKeys);
 
-  const winnerMetadataResults = await seasonMetadataClient.fetchByKey({
+  const winnerMetadataResult = await seasonMetadataClient.fetchByKey({
     seasonId,
     playerId: matchNode.winnerId
   });
 
-  if (!winnerMetadataResults || !loserMetadataResults.length) {
+  if (!winnerMetadataResult || !loserMetadataResults.length) {
     throw new Error("Error getting metadata. Season id or player id(s) are invalid.");
   }
 
+  const { playerId, seasonWins, playedOpponentIds, totalWins } = seasonMapper.toMetadataNode(
+    winnerMetadataResult
+  );
   const loserMetadataNodes = loserMetadataResults.map(seasonMapper.toMetadataNode);
-  const allPlayers = [...matchNode.loserIds, matchNode.winnerId];
 
-  return await Promise.all(
-    loserMetadataNodes.map((loserNode) => {
-      const { playerId, playedOpponentIds, seasonWins, seasonLosses, totalLosses } = loserNode;
+  const allPlayersInMatch = [...matchNode.loserIds, matchNode.winnerId];
+  const isSeasonMatch = matchNode.isSeasonPoint;
 
-      const isSeasonMatch = matchNode.isSeasonPoint;
+  const shouldFilterOpponent = (id: string, players: string[]): boolean => !players.includes(id);
 
-      const totalSeasonWins = isSeasonMatch ? seasonWins + 1 : seasonWins;
+  return await Promise.all([
+    seasonMetadataClient.update(
+      { seasonId, playerId: playerId },
+      {
+        seasonWins: isSeasonMatch ? seasonWins + 1 : seasonWins,
+        totalWins: totalWins + 1,
+        playedOpponentIds: [
+          ...playedOpponentIds,
+          ...matchNode.loserIds.filter((id) => shouldFilterOpponent(id, playedOpponentIds))
+        ]
+      }
+    ),
+    ...loserMetadataNodes.map((loserNode) => {
+      const {
+        playerId: loserId,
+        playedOpponentIds: opponentIds,
+        seasonLosses,
+        totalLosses
+      } = loserNode;
+
       const totalSeasonLosses = isSeasonMatch ? totalLosses + 1 : seasonLosses;
       const totalMatchLosses = totalLosses + 1;
 
-      const newPlayedOpponents = playedOpponentIds.filter(
-        (playedOpponentId) => !allPlayers.includes(playedOpponentId)
-      );
+      const newOpponents = allPlayersInMatch.filter((id) => id !== loserId);
+
+      const newPlayedOpponents = [
+        ...opponentIds,
+        ...newOpponents.filter((id) => shouldFilterOpponent(id, opponentIds))
+      ];
 
       return seasonMetadataClient.update(
-        { seasonId, playerId },
+        { seasonId, playerId: loserId },
         {
-          seasonWins: totalSeasonWins,
           seasonLosses: totalSeasonLosses,
           totalLosses: totalMatchLosses,
           playedOpponentIds: newPlayedOpponents
         }
       );
     })
-  );
+  ]);
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
