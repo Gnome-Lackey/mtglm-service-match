@@ -30,9 +30,3 @@ iamRoleStatements:
       - dynamodb:PutItem
     Resource:
       - ${self:custom.matchTableArn}
-  - Effect: Allow
-    Action:
-      - dynamodb:GetItem
-      - dynamodb:BatchGetItem
-      - dynamodb:UpdateItem
-    Resource: ${self:custom.SeasonMetadataTableArn}

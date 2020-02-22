@@ -10,8 +10,6 @@ provider:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
     MATCH_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
-    SEASON_METADATA_TABLE_NAME:
-      Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableName
     USER_POOL_ID:
       Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
 
@@ -37,8 +35,6 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
   matchTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
-  SeasonMetadataTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-SeasonMetadataTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
