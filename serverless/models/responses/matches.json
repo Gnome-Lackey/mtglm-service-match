@@ -18,9 +18,12 @@
         "type": "number",
         "title": "MatchGames"
       },
-      "winner": {
-        "type": "string",
-        "title": "MatchWinner"
+      "winners": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "title": "MatchWinners"
+        }
       },
       "losers": {
         "type": "array",
