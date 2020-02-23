@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "CreateMatchSchema",
-  "required": ["wins", "season", "games", "winner", "losers"],
+  "required": ["wins", "season", "games", "winners", "losers"],
   "properties": {
     "wins": {
       "type": "number",
