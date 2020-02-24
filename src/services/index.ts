@@ -31,12 +31,12 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
   const searchBySameResults = await matchClient.query({
     winnerIds: data.winners,
     loserIds: data.losers
-  });
+  }, true);
 
   const searchByOppositeResults = await matchClient.query({
     winnerIds: data.losers,
     loserIds: data.winners
-  });
+  }, true);
 
   const isSeasonPoint =
     (!searchBySameResults || !searchBySameResults.length) &&
@@ -52,7 +52,11 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 export const query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
   const filters = queryMapper.toMatchFilters(queryParameters);
 
+  console.log("filters", JSON.stringify(filters));
+
   const matchResults = await matchClient.query(filters);
+
+  console.log("results", JSON.stringify(matchResults));
 
   if (!matchResults.length) {
     return [];
