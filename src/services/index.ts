@@ -28,12 +28,19 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const existingSeasonMatch = await matchClient.query({
+  const searchBySameResults = await matchClient.query({
     winnerIds: data.winners,
     loserIds: data.losers
   });
 
-  const isSeasonPoint = existingSeasonMatch && !existingSeasonMatch.length;
+  const searchByOppositeResults = await matchClient.query({
+    winnerIds: data.losers,
+    loserIds: data.winners
+  });
+
+  const isSeasonPoint =
+    (!searchBySameResults || !searchBySameResults.length) &&
+    (!searchByOppositeResults || !searchByOppositeResults.length);
 
   const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint });
 
