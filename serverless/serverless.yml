@@ -38,5 +38,6 @@ custom:
 
 functions:
   Get: ${file(partials/functions/get.yml)}
+  Query: ${file(partials/functions/query.yml)}
   Create: ${file(partials/functions/create.yml)}
   Delete: ${file(partials/functions/delete.yml)}
