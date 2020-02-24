@@ -28,5 +28,6 @@ iamRoleStatements:
       - dynamodb:QueryItem
       - dynamodb:GetItem
       - dynamodb:PutItem
+      - dynamodb:Scan
     Resource:
       - ${self:custom.matchTableArn}
