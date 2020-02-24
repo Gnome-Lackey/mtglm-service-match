@@ -33,7 +33,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     loserIds: data.losers
   });
 
-  const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint: !existingSeasonMatch });
+  const isSeasonPoint = existingSeasonMatch && !existingSeasonMatch.length;
+
+  const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint });
 
   const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);
 
