@@ -54,7 +54,7 @@ export const query = async (queryParameters: MatchQueryParameters): Promise<Matc
 
   console.log("filters", JSON.stringify(filters));
 
-  const matchResults = await matchClient.query(filters);
+  const matchResults = await matchClient.query(filters, true);
 
   console.log("results", JSON.stringify(matchResults));
 
