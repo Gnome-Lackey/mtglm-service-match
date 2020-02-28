@@ -3,13 +3,12 @@ import { AttributeMap } from "aws-sdk/clients/dynamodb";
 import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
 
 import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
-import * as queryMapper from "mtglm-service-sdk/build/mappers/query";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
 
 import { PROPERTIES_MATCH } from "mtglm-service-sdk/build/constants/mutable_properties";
-import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
+import { MatchQueryParameters, SeasonQueryParams } from "mtglm-service-sdk/build/models/QueryParameters";
 
 const { MATCH_TABLE_NAME } = process.env;
 
@@ -28,19 +27,15 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const searchBySameResults = await matchClient.query({
-    winnerIds: data.winners,
-    loserIds: data.losers
-  }, true);
+  const query = {
+    seasonId: data.season,
+    "*winnerIds": [...data.winners, ...data.losers],
+    "*loserIds": [...data.winners, ...data.losers]
+  } as SeasonQueryParams;
 
-  const searchByOppositeResults = await matchClient.query({
-    winnerIds: data.losers,
-    loserIds: data.winners
-  }, true);
+  const searchBySameResults = await matchClient.query(query);
 
-  const isSeasonPoint =
-    (!searchBySameResults || !searchBySameResults.length) &&
-    (!searchByOppositeResults || !searchByOppositeResults.length);
+  const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
 
   const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint });
 
@@ -50,11 +45,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 };
 
 export const query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
-  const filters = queryMapper.toMatchFilters(queryParameters);
+  console.log("queryParameters", JSON.stringify(queryParameters));
 
-  console.log("filters", JSON.stringify(filters));
-
-  const matchResults = await matchClient.query(filters, true);
+  const matchResults = await matchClient.query(queryParameters);
 
   console.log("results", JSON.stringify(matchResults));
 
