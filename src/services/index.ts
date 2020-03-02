@@ -8,7 +8,7 @@ import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/R
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
 
 import { PROPERTIES_MATCH } from "mtglm-service-sdk/build/constants/mutable_properties";
-import { MatchQueryParameters, SeasonQueryParams } from "mtglm-service-sdk/build/models/QueryParameters";
+import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
 
 const { MATCH_TABLE_NAME } = process.env;
 
@@ -27,13 +27,13 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const query = {
-    seasonId: data.season,
-    "*winnerIds": [...data.winners, ...data.losers],
-    "*loserIds": [...data.winners, ...data.losers]
-  } as SeasonQueryParams;
+  const filters = matchMapper.toFilters({
+    season: data.season,
+    "winners*": [...data.winners, ...data.losers],
+    "losers*": [...data.winners, ...data.losers]
+  });
 
-  const searchBySameResults = await matchClient.query(query);
+  const searchBySameResults = await matchClient.query(filters);
 
   const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
 
@@ -47,7 +47,11 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 export const query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
   console.log("queryParameters", JSON.stringify(queryParameters));
 
-  const matchResults = await matchClient.query(queryParameters);
+  const filters = matchMapper.toFilters(queryParameters);
+
+  console.log("filters", JSON.stringify(filters));
+
+  const matchResults = await matchClient.query(filters);
 
   console.log("results", JSON.stringify(matchResults));
 
