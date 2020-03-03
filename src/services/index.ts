@@ -29,8 +29,8 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
   const filters = matchMapper.toFilters({
     season: data.season,
-    "winners*": [...data.winners, ...data.losers],
-    "losers*": [...data.winners, ...data.losers]
+    "winners|": [...data.winners, ...data.losers],
+    "losers|": [...data.winners, ...data.losers]
   });
 
   const searchBySameResults = await matchClient.query(filters);
