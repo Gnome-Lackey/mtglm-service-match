@@ -45,15 +45,9 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 };
 
 export const query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
-  console.log("queryParameters", JSON.stringify(queryParameters));
-
   const filters = matchMapper.toFilters(queryParameters);
 
-  console.log("filters", JSON.stringify(filters));
-
   const matchResults = await matchClient.query(filters);
-
-  console.log("results", JSON.stringify(matchResults));
 
   if (!matchResults.length) {
     return [];
