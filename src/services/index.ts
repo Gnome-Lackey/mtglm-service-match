@@ -27,10 +27,12 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
+  const idQuery = `[]${data.winners.join(',')},${data.losers.join(',')}`;
+
   const filters = matchMapper.toFilters({
     season: data.season,
-    "winners|": [...data.winners, ...data.losers],
-    "losers|": [...data.winners, ...data.losers]
+    "winners|": idQuery,
+    "losers|": idQuery
   });
 
   const searchBySameResults = await matchClient.query(filters);
