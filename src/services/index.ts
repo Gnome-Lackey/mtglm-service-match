@@ -27,16 +27,20 @@ const buildResponse = (matchResult: AttributeMap): MatchResponse => {
 };
 
 export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const winnerIdQuery = `[]${data.winners.join(',')}`;
-  const loserIdQuery = `[]${data.losers.join(',')}`;
+  const winnerIdQuery = `[]${data.winners.join(",")}`;
+  const loserIdQuery = `[]${data.losers.join(",")}`;
 
   const filters = matchMapper.toFilters({
     season: data.season,
-    "winners": winnerIdQuery,
-    "losers": loserIdQuery
+    winners: winnerIdQuery,
+    losers: loserIdQuery
   });
 
+  console.log("Filters", JSON.stringify(filters));
+
   const searchBySameResults = await matchClient.query(filters);
+
+  console.log("searchBySameResults", JSON.stringify(searchBySameResults));
 
   const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
 
