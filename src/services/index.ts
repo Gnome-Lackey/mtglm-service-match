@@ -34,10 +34,8 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
     season: data.season,
     winners: winnerIdQuery,
     losers: loserIdQuery,
-    seasonPoint: true
+    seasonPoint: "true"
   });
-
-  console.log("Filters", JSON.stringify(filters));
 
   const searchBySameResults = await matchClient.query(filters);
 
