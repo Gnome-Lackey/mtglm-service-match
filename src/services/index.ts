@@ -32,8 +32,8 @@ export const create = async (data: MatchCreateRequest): Promise<MatchResponse> =
 
   const filters = matchMapper.toFilters({
     season: data.season,
-    winners: winnerIdQuery,
-    losers: loserIdQuery,
+    "winners|": winnerIdQuery,
+    "losers|": loserIdQuery,
     seasonPoint: "true"
   });
 
