@@ -4,7 +4,9 @@ import { LambdaResponse } from "mtglm-service-sdk/build/models/Lambda";
 import { MatchPathParameters } from "mtglm-service-sdk/build/models/PathParameters";
 import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
 
-import * as controller from "../controllers";
+import MatchController from "../controllers";
+
+const controller = new MatchController();
 
 module.exports.handler = requestMiddleware(
   async (

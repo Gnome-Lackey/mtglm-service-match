@@ -1,72 +1,75 @@
 import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
-import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
+import MTGLMDynamoClient from "mtglm-service-sdk/build/clients/dynamo";
 
-import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
+import MatchMapper from "mtglm-service-sdk/build/mappers/match";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
-
-import { PROPERTIES_MATCH } from "mtglm-service-sdk/build/constants/mutable_properties";
 import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
 
-const { MATCH_TABLE_NAME } = process.env;
+import { PROPERTIES_MATCH } from "mtglm-service-sdk/build/constants/mutable_properties";
 
-const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
+export default class MatchService {
+  private tableName = process.env.MATCH_TABLE_NAME;
 
-const buildResponse = (matchResult: AttributeMap): MatchResponse => {
-  const matchNode = matchMapper.toNode(matchResult);
-  const matchView = matchMapper.toView(matchNode);
+  private client = new MTGLMDynamoClient(this.tableName, PROPERTIES_MATCH);
+  private mapper = new MatchMapper();
 
-  return {
-    ...matchView,
-    season: matchNode.seasonId,
-    losers: matchNode.loserIds,
-    winners: matchNode.winnerIds
-  };
-};
+  private buildResponse(matchResult: AttributeMap): MatchResponse {
+    const matchNode = this.mapper.toNode(matchResult);
+    const matchView = this.mapper.toView(matchNode);
 
-export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const idQuery = `[]${data.winners.join(",")},${data.losers.join(",")}`;
-
-  const filters = matchMapper.toFilters({
-    season: data.season,
-    winners: idQuery,
-    losers: idQuery,
-    seasonPoint: "true"
-  });
-
-  const searchBySameResults = await matchClient.query(filters);
-
-  const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
-
-  const matchItem = matchMapper.toCreateItem({ ...data, isSeasonPoint });
-
-  const matchResult = await matchClient.create({ matchId: matchItem.matchId }, matchItem);
-
-  return buildResponse(matchResult);
-};
-
-export const query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
-  const filters = matchMapper.toFilters(queryParameters);
-
-  const matchResults = await matchClient.query(filters);
-
-  if (!matchResults.length) {
-    return [];
+    return {
+      ...matchView,
+      season: matchNode.seasonId,
+      losers: matchNode.loserIds,
+      winners: matchNode.winnerIds
+    };
   }
 
-  return matchResults.map(buildResponse);
-};
+  async create(data: MatchCreateRequest): Promise<MatchResponse> {
+    const idQuery = `[]${data.winners.join(",")},${data.losers.join(",")}`;
 
-export const get = async (matchId: string): Promise<MatchResponse> => {
-  const matchResult = await matchClient.fetchByKey({ matchId });
+    const filters = this.mapper.toFilters({
+      season: data.season,
+      winners: idQuery,
+      losers: idQuery,
+      seasonPoint: "true"
+    });
 
-  return buildResponse(matchResult);
-};
+    const searchBySameResults = await this.client.query(filters);
 
-export const remove = async (matchId: string): Promise<SuccessResponse> => {
-  await matchClient.remove({ matchId });
+    const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
 
-  return { message: "Successfully deleted match." };
-};
+    const matchItem = this.mapper.toCreateItem({ ...data, isSeasonPoint });
+
+    const matchResult = await this.client.create({ matchId: matchItem.matchId }, matchItem);
+
+    return this.buildResponse(matchResult);
+  }
+
+  async query(queryParameters: MatchQueryParameters): Promise<MatchResponse[]> {
+    const filters = this.mapper.toFilters(queryParameters);
+
+    const matchResults = await this.client.query(filters);
+
+    if (!matchResults.length) {
+      return [];
+    }
+
+    return matchResults.map(this.buildResponse);
+  }
+
+  async get(matchId: string): Promise<MatchResponse> {
+    const matchResult = await this.client.fetchByKey({ matchId });
+
+    return this.buildResponse(matchResult);
+  }
+
+  async remove(matchId: string): Promise<SuccessResponse> {
+    await this.client.remove({ matchId });
+
+    return { message: "Successfully deleted match." };
+  }
+}
