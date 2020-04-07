@@ -10,10 +10,6 @@ provider:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
     MATCH_TABLE_NAME:
       Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
-    RECORD_TABLE_NAME:
-      Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableName
-    PLAYER_TABLE_NAME:
-      Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableName
     USER_POOL_ID:
       Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
 
@@ -39,12 +35,9 @@ custom:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
   matchTableArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
-  recordTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-RecordTableArn
-  playerTableArn:
-    Fn::ImportValue: ${self:provider.stage}-mtglm-PlayerTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
+  Query: ${file(partials/functions/query.yml)}
   Create: ${file(partials/functions/create.yml)}
   Delete: ${file(partials/functions/delete.yml)}

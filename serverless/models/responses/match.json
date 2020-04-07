@@ -3,23 +3,33 @@
   "type": "object",
   "title": "MatchResponseSchema",
   "properties": {
-    "records": {
+    "isSeasonPoint": {
+      "type": "boolean",
+      "title": "MatchIsSeasonPoint"
+    },
+    "wins": {
+      "type": "number",
+      "title": "MatchWins"
+    },
+    "games": {
+      "type": "number",
+      "title": "MatchGames"
+    },
+    "winners": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "player": {
-            "type": "string",
-            "title": "PlayerId"
-          },
-          "wins": {
-            "type": "integer",
-            "title": "PlayerWins"
-          }
-        }
+        "type": "string",
+        "title": "MatchWinners"
       }
     },
-    "Season": {
+    "losers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "title": "MatchLosers"
+      }
+    },
+    "season": {
       "type": "string",
       "title": "MatchSeasonId"
     }

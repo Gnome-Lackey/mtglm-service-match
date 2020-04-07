@@ -25,13 +25,9 @@ events:
 iamRoleStatements:
   - Effect: Allow
     Action:
+      - dynamodb:QueryItem
       - dynamodb:GetItem
       - dynamodb:PutItem
+      - dynamodb:Scan
     Resource:
       - ${self:custom.matchTableArn}
-      - ${self:custom.recordTableArn}
-  - Effect: Allow
-    Action:
-      - dynamodb:GetItem
-      - dynamodb:UpdateItem
-    Resource: ${self:custom.playerTableArn}
