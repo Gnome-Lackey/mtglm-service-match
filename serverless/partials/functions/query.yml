@@ -1,33 +1,28 @@
-name: ${self:provider.stage}-mtglm-matches-post
-handler: build/handlers/post.handler
+name: ${self:provider.stage}-mtglm-matches-query
+handler: build/handlers/query.handler
 tags:
-  post: match
+  query: player
 events:
   - http:
-      method: post
+      method: get
       path: matches
-      request:
-        schema:
-          application/json: ${file(models/requests/create.json)}
       authorizer: ${file(partials/common/authorizer.yml)}
       cors: ${file(partials/common/cors.yml)}
       documentation:
-        summary: "POST Match"
-        description: "Create new match"
+        summary: "GET all Matches"
+        description: "Get all matches"
         requestHeaders:
           - name: "Authorization"
             description: "Authorization token is needed to access the endpoint."
         methodResponses:
           - statusCode: "200"
             requestModels:
-              "application/json": MatchResponse
+              "application/json": PlayerResponse
           - statusCode: "500"
 iamRoleStatements:
   - Effect: Allow
     Action:
-      - dynamodb:QueryItem
-      - dynamodb:GetItem
-      - dynamodb:PutItem
       - dynamodb:Scan
+      - dynamodb:Query
     Resource:
       - ${self:custom.matchTableArn}

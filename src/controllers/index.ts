@@ -1,49 +1,71 @@
-import { logFailure, logSuccess } from "mtglm-service-sdk/build/utils/logger";
-import { handleError, handleSuccess } from "mtglm-service-sdk/build/utils/response";
+import MTGLMLogger from "mtglm-service-sdk/build/utils/logger";
+import ResponseHandler from "mtglm-service-sdk/build/utils/response";
 
 import { LambdaResponse } from "mtglm-service-sdk/build/models/Lambda";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
+import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
 
-import * as service from "../services";
+import MatchService from "../services";
 
-export const create = async (data: MatchCreateRequest): Promise<LambdaResponse> => {
-  try {
-    const result = await service.create(data);
+export default class MatchController {
+  private service = new MatchService();
 
-    logSuccess("DYNAMO", "POST mach", result);
+  private logger = new MTGLMLogger();
+  private responseHandler = new ResponseHandler();
 
-    return handleSuccess(result);
-  } catch (error) {
-    logFailure("DYNAMO", "POST mach", error);
+  create = async (data: MatchCreateRequest): Promise<LambdaResponse> => {
+    try {
+      const result = await this.service.create(data);
 
-    return handleError(error);
-  }
-};
+      this.logger.success("DYNAMO", "POST match", result);
 
-export const get = async (machId: string): Promise<LambdaResponse> => {
-  try {
-    const result = await service.get(machId);
+      return this.responseHandler.success(result);
+    } catch (error) {
+      this.logger.failure("DYNAMO", "POST match", error);
 
-    logSuccess("DYNAMO", "GET mach", result);
+      return this.responseHandler.error(error);
+    }
+  };
 
-    return handleSuccess(result);
-  } catch (error) {
-    logFailure("DYNAMO", "GET mach", error);
+  get = async (matchId: string): Promise<LambdaResponse> => {
+    try {
+      const result = await this.service.get(matchId);
 
-    return handleError(error);
-  }
-};
+      this.logger.success("DYNAMO", "GET match", result);
 
-export const remove = async (machId: string): Promise<LambdaResponse> => {
-  try {
-    const result = await service.remove(machId);
+      return this.responseHandler.success(result);
+    } catch (error) {
+      this.logger.failure("DYNAMO", "GET match", error);
 
-    logSuccess("DYNAMO", "DELETE mach", result);
+      return this.responseHandler.error(error);
+    }
+  };
 
-    return handleSuccess(result);
-  } catch (error) {
-    logFailure("DYNAMO", "DELETE mach", error);
+  query = async (queryParameters: MatchQueryParameters): Promise<LambdaResponse> => {
+    try {
+      const result = await this.service.query(queryParameters);
 
-    return handleError(error);
-  }
-};
+      this.logger.success("DYNAMO", "Query matches", result);
+
+      return this.responseHandler.success(result);
+    } catch (error) {
+      this.logger.failure("DYNAMO", "Query matches", error);
+
+      return this.responseHandler.error(error);
+    }
+  };
+
+  remove = async (matchId: string): Promise<LambdaResponse> => {
+    try {
+      const result = await this.service.remove(matchId);
+
+      this.logger.success("DYNAMO", "DELETE match", result);
+
+      return this.responseHandler.success(result);
+    } catch (error) {
+      this.logger.failure("DYNAMO", "DELETE match", error);
+
+      return this.responseHandler.error(error);
+    }
+  };
+}

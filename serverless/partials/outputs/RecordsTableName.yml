@@ -1,4 +1,0 @@
-Description: 'Name of the dynamo records table'
-Value: ${self:provider.stage}-mtglm-records
-Export:
-  Name: ${self:provider.stage}-mtglm-RecordTableName

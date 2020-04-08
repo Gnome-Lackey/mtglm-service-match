@@ -1,81 +1,75 @@
 import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
-import { MTGLMDynamoClient } from "mtglm-service-sdk/build/clients/dynamo";
+import MTGLMDynamoClient from "mtglm-service-sdk/build/clients/dynamo";
 
-import * as matchMapper from "mtglm-service-sdk/build/mappers/match";
-import * as recordMapper from "mtglm-service-sdk/build/mappers/record";
+import MatchMapper from "mtglm-service-sdk/build/mappers/match";
 
 import { SuccessResponse, MatchResponse } from "mtglm-service-sdk/build/models/Responses";
 import { MatchCreateRequest } from "mtglm-service-sdk/build/models/Requests";
+import { MatchQueryParameters } from "mtglm-service-sdk/build/models/QueryParameters";
 
-import {
-  PROPERTIES_RECORD,
-  PROPERTIES_MATCH
-} from "mtglm-service-sdk/build/constants/mutable_properties";
+import { PROPERTIES_MATCH } from "mtglm-service-sdk/build/constants/mutable_properties";
 
-const { MATCH_TABLE_NAME, RECORD_TABLE_NAME } = process.env;
+export default class MatchService {
+  private tableName = process.env.MATCH_TABLE_NAME;
 
-const matchClient = new MTGLMDynamoClient(MATCH_TABLE_NAME, PROPERTIES_MATCH);
-const recordClient = new MTGLMDynamoClient(RECORD_TABLE_NAME, PROPERTIES_RECORD);
+  private client = new MTGLMDynamoClient(this.tableName, PROPERTIES_MATCH);
+  private mapper = new MatchMapper();
 
-const buildResponse = (
-  match: AttributeMap,
-  recordA: AttributeMap,
-  recordB: AttributeMap
-): MatchResponse => {
-  const matchNode = matchMapper.toNode(match);
-  const recordANode = recordMapper.toNode(recordA);
-  const recordBNode = recordMapper.toNode(recordB);
+  private buildResponse = (matchResult: AttributeMap): MatchResponse => {
+    const matchNode = this.mapper.toNode(matchResult);
+    const matchView = this.mapper.toView(matchNode);
 
-  return {
-    id: matchNode.matchId,
-    playerARecord: {
-      ...recordMapper.toView(recordANode),
-      player: recordANode.playerId,
-      match: matchNode.matchId
-    },
-    playerBRecord: {
-      ...recordMapper.toView(recordBNode),
-      player: recordBNode.playerId,
-      match: matchNode.matchId
-    }
+    return {
+      ...matchView,
+      season: matchNode.seasonId,
+      losers: matchNode.loserIds,
+      winners: matchNode.winnerIds
+    };
   };
-};
 
-export const create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
-  const matchItem = matchMapper.toCreateItem();
-  const recordAItem = recordMapper.toCreateItem({ ...data.playerA, match: matchItem.matchId });
-  const recordBItem = recordMapper.toCreateItem({ ...data.playerB, match: matchItem.matchId });
+  create = async (data: MatchCreateRequest): Promise<MatchResponse> => {
+    const idQuery = `[]${data.winners.join(",")},${data.losers.join(",")}`;
 
-  const { matchId } = matchItem;
-  const { recordId: recordAId } = recordAItem;
-  const { recordId: recordBId } = recordBItem;
+    const filters = this.mapper.toFilters({
+      season: data.season,
+      winners: idQuery,
+      losers: idQuery,
+      seasonPoint: "true"
+    });
 
-  const promises = await Promise.all([
-    matchClient.create({ matchId }, matchItem),
-    recordClient.create({ recordId: recordAId, matchId }, recordAItem),
-    recordClient.create({ recordId: recordBId, matchId }, recordBItem)
-  ]);
+    const searchBySameResults = await this.client.query(filters);
 
-  return buildResponse(promises[0], promises[1], promises[2]);
-};
+    const isSeasonPoint = !searchBySameResults || !searchBySameResults.length;
 
-export const get = async (matchId: string): Promise<MatchResponse> => {
-  const matchResult = await matchClient.fetchByKey({ matchId });
-  const recordAResults = await recordClient.fetchByKeys([
-    { recordId: matchResult.matchARecordId as string, matchId },
-    { recordId: matchResult.matchARecordId as string, matchId }
-  ]);
+    const matchItem = this.mapper.toCreateItem({ ...data, isSeasonPoint });
 
-  return buildResponse(matchResult, recordAResults[0], recordAResults[1]);
-};
+    const matchResult = await this.client.create({ matchId: matchItem.matchId }, matchItem);
 
-export const remove = async (matchId: string): Promise<SuccessResponse> => {
-  const matchResult = await matchClient.fetchByKey({ matchId });
+    return this.buildResponse(matchResult);
+  };
 
-  await recordClient.remove({ recordId: matchResult.matchARecordId as string, matchId });
-  await recordClient.remove({ recordId: matchResult.matchBRecordId as string, matchId });
-  await matchClient.remove({ matchId });
+  query = async (queryParameters: MatchQueryParameters): Promise<MatchResponse[]> => {
+    const filters = this.mapper.toFilters(queryParameters);
 
-  return { message: "Successfully deleted match." };
-};
+    const matchResults = await this.client.query(filters);
+
+    if (!matchResults.length) {
+      return [];
+    }
+
+    return matchResults.map(this.buildResponse);
+  };
+
+  get = async (matchId: string): Promise<MatchResponse> => {
+    const matchResult = await this.client.fetchByKey({ matchId });
+
+    return this.buildResponse(matchResult);
+  };
+
+  remove = async (matchId: string): Promise<SuccessResponse> => {
+    await this.client.remove({ matchId });
+
+    return { message: "Successfully deleted match." };
+  };
+}

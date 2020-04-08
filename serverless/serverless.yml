@@ -8,8 +8,8 @@ provider:
   memorySize: 128
   environment:
     ALLOWED_ORIGIN: ${env:ALLOWED_ORIGIN}
-    MATCH_TABLE_NAME: ${self:provider.stage}-mtglm-matches
-    RECORD_TABLE_NAME: ${self:provider.stage}-mtglm-records
+    MATCH_TABLE_NAME:
+      Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableName
     USER_POOL_ID:
       Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolId
 
@@ -26,22 +26,18 @@ plugins:
 resources:
   Resources:
     MatchesApiGatewayAuthorizer: ${file(partials/apiGatewayAuthorizer.yml)}
-    MatchesTable: ${file(partials/dynamo.yml)}
-    RecordsTable: ${file(partials/dynamo.yml)}
-  Outputs:
-    matchTableArn: ${file(partials/outputs/TableArn.yml)}
-    matchTableName: ${file(partials/outputs/TableName.yml)}
-    recordTableArn: ${file(partials/outputs/TableArn.yml)}
-    recordTableName: ${file(partials/outputs/TableName.yml)}
 
 custom:
   documentation: ${file(partials/documentation.yml)}
-  userPoolArn: 
+  userPoolArn:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolArn
-  userPoolName: 
+  userPoolName:
     Fn::ImportValue: ${self:provider.stage}-mtglm-UserPoolName
+  matchTableArn:
+    Fn::ImportValue: ${self:provider.stage}-mtglm-MatchTableArn
 
 functions:
   Get: ${file(partials/functions/get.yml)}
+  Query: ${file(partials/functions/query.yml)}
   Create: ${file(partials/functions/create.yml)}
   Delete: ${file(partials/functions/delete.yml)}

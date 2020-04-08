@@ -2,43 +2,38 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "MatchResponseSchema",
-  "required": ["id", "name", "userName", "email"],
   "properties": {
-    "playerA": {
-      "type": "object",
-      "properties": {
-        "player": {
-          "type": "string",
-          "title": "PlayerAId"
-        },
-        "wins": {
-          "type": "integer",
-          "title": "PlayerAWins"
-        },
-        "losses": {
-          "type": "integer",
-          "title": "PlayerALosses"
-        }
+    "id": {
+      "type": "string",
+      "title": "MatchId"
+    },
+    "isSeasonPoint": {
+      "type": "boolean",
+      "title": "MatchIsSeasonPoint"
+    },
+    "games": {
+      "type": "number",
+      "title": "MatchGames"
+    },
+    "wins": {
+      "type": "number",
+      "title": "MatchWins"
+    },
+    "winners": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "title": "MatchWinnerIds"
       }
     },
-    "playerB": {
-      "type": "object",
-      "properties": {
-        "player": {
-          "type": "string",
-          "title": "PlayerBId"
-        },
-        "wins": {
-          "type": "integer",
-          "title": "PlayerBWins"
-        },
-        "losses": {
-          "type": "integer",
-          "title": "PlayerBLosses"
-        }
+    "losers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "title": "MatchLoserIds"
       }
     },
-    "Season": {
+    "season": {
       "type": "string",
       "title": "MatchSeasonId"
     }
