@@ -6,30 +6,34 @@
     "type": "object",
     "title": "Match",
     "properties": {
+      "id": {
+        "type": "string",
+        "title": "MatchId"
+      },
       "isSeasonPoint": {
         "type": "boolean",
         "title": "MatchIsSeasonPoint"
-      },
-      "wins": {
-        "type": "number",
-        "title": "MatchWins"
       },
       "games": {
         "type": "number",
         "title": "MatchGames"
       },
+      "wins": {
+        "type": "number",
+        "title": "MatchWins"
+      },
       "winners": {
         "type": "array",
         "items": {
           "type": "string",
-          "title": "MatchWinners"
+          "title": "MatchWinnerIds"
         }
       },
       "losers": {
         "type": "array",
         "items": {
           "type": "string",
-          "title": "MatchLosers"
+          "title": "MatchLoserIds"
         }
       },
       "season": {
