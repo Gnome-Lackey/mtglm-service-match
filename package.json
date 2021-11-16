@@ -27,7 +27,7 @@
     "@types/jwt-decode": "^2.2.1",
     "@types/node": "^12.7.12",
     "@types/uuid": "^3.4.5",
-    "aws-sdk": "^2.482.0",
+    "aws-sdk": "^2.814.0",
     "global": "^4.4.0",
     "jwt-decode": "^2.2.0",
     "mtglm-service-sdk": "Gnome-Lackey/mtglm-service-sdk#dev",
